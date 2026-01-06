@@ -1,12 +1,12 @@
 import "./App.css";
+import banner from "./assets/banner.png";
 
 function App() {
   return (
     <>
-      <h1>
-        Bienvenidos a finav.com.mx, la neta me salgo del proyecto, bye y puT000
-        el que entre
-      </h1>
+      <h1> Estamos trabajando duro para traerte la primer edición de:</h1>
+      <img src={banner} alt="Descripción de la imagen" />
+      <h1>30 y 31 de mayo.</h1>
     </>
   );
 }
