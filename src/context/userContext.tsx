@@ -24,6 +24,7 @@ export const UserContextProvider = ({ children }: PropsWithChildren) => {
 
   const handleLogin = async (email: string, password: string) => {
     const responseData = await loginUsuario({ email, password });
+
     if (!responseData.ok) {
       setUser(null);
       setAuthStatus("not-authenticaded");

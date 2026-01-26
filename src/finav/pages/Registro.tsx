@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { crearUsuario } from "../actions/registrarUsuario.action";
+import { UserContext } from "@/context/userContext";
+import { toast } from "sonner";
+import { LoadingCircle } from "@/components/custom/LoadingCircle";
 
 type Inputs = {
   name: string;
@@ -20,7 +23,11 @@ type Inputs = {
 export const Registro = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useContext(UserContext);
 
+  const [loading, setLoading] = useState(false);
+
+  const navigation = useNavigate();
   const {
     register,
     handleSubmit,
@@ -29,12 +36,28 @@ export const Registro = () => {
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    setLoading(true);
     const response = await crearUsuario(data);
 
     if (response.ok) {
-      localStorage.setItem("tokenFinav", response.token);
+      const result = await login(data.email, data.password);
+      if (!result) {
+        toast.warning("Usuario y/o contraseña incorrectos", {
+          position: "top-center",
+        });
+        setLoading(false);
+        return;
+      }
+      toast.success("Usuario creado con exito", {
+        position: "top-center",
+      });
+      setLoading(false);
+      navigation("/convocatorias");
     } else {
-      alert("El usuario ya existe bro");
+      toast.warning("Ya existe un usuario con este correo", {
+        position: "top-center",
+      });
+      setLoading(false);
     }
   };
 
@@ -202,14 +225,23 @@ export const Registro = () => {
                 </label>
               </div>
               <div className=" flex justify-center">
-                <Button
-                  variant="outline"
-                  className="rounded-full! text-sm! border-purple-900! bg-purple-900 text-white! hover:bg-purple-300"
-                  type="submit"
-                >
-                  {" "}
-                  Enviar
-                </Button>
+                {!loading ? (
+                  <>
+                    {" "}
+                    <Button
+                      variant="outline"
+                      className="rounded-full! text-sm! border-purple-900! bg-purple-900 text-white! hover:bg-purple-300"
+                      type="submit"
+                    >
+                      {" "}
+                      Enviar
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <LoadingCircle blockPage={true}></LoadingCircle>
+                  </>
+                )}
               </div>
             </div>
           </div>
