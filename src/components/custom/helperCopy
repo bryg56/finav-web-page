@@ -1,0 +1,52 @@
+<div class="text-gray-700 inline">
+  <h4
+    class="text-center text-lg font-bold text-pink-500! uppercase tracking-wider"
+  >
+    ¿Quiénes pueden participar?
+  </h4>
+
+  <div class="text-center">
+    <p class="text-base leading-relaxed">
+      Autores y autoras de
+      <span class="font-semibold text-purple-700">
+        cómic, ilustración y narrativa gráfica </span
+      >, mayores de edad, de nacionalidad
+      <span class="font-semibold"> mexicana o latinoamericana </span>. Pueden
+      participar de manera individual o en equipo
+      <span class="italic">
+        (en caso de ser colectivo, se deberá designar un líder que represente al
+        equipo) </span
+      >.
+    </p>
+
+    <p class="text-base leading-relaxed">
+      Cada participante deberá enviar un
+      <span class="font-semibold"> cómic original </span>
+      de entre
+      <span class="font-semibold text-purple-700"> 14 y 30 páginas </span>. Las
+      obras deberán contar con una historia estructurada y viñetas que mantengan
+      una narrativa gráfica coherente. La historia puede ser autoconclusiva o un
+      capítulo piloto para un cómic serializable.
+    </p>
+
+    <p class="text-base leading-relaxed">
+      <span class="font-semibold text-purple-700"> “ONE CHOT” </span>
+      no solo es una revista, sino una
+      <span class="font-semibold"> estrategia de networking </span>
+      entre autores emergentes y profesionales con editoriales de cómic y manga
+      durante el festival
+      <span class="font-semibold"> FINAV </span>.
+    </p>
+
+    <p class="text-pink-500! font-semibold">
+      Te invitamos a revisar las bases completas de la convocatoria.
+    </p>
+
+    <p class="text-sm font-semibold text-red-500!">
+      La fecha límite de inscripción será el
+      <span class="font-bold"> 31 de marzo de 2026 </span>
+      a las
+      <span class="font-bold"> 23:59 horas </span>.
+    </p>
+  </div>
+</div>

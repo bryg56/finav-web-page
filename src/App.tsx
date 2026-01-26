@@ -1,12 +1,16 @@
 import "./App.css";
-import banner from "./assets/banner.png";
+import { RouterProvider } from "react-router";
+import { finavRouter } from "./router/app,router";
+import { UserContextProvider } from "./context/userContext";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   return (
     <>
-      <h1> Estamos trabajando duro para traerte la primer edición de:</h1>
-      <img src={banner} alt="Descripción de la imagen" />
-      <h1>30 y 31 de mayo.</h1>
+      <UserContextProvider>
+        <RouterProvider router={finavRouter}></RouterProvider>
+        <Toaster />
+      </UserContextProvider>
     </>
   );
 }
