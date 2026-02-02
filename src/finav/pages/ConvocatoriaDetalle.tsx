@@ -67,18 +67,28 @@ export const ConvocatoriaDetalle = () => {
         <CardFooter className="flex-col gap-2">
           <CardFooter className="flex justify-center gap-4">
             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-30">
-              <Button
-                variant="outline"
-                className="px-6 py-3 rounded-full! text-sm! border-purple-600! bg-purple-600 text-white! hover:bg-purple-300 "
+              <a
+                href={convocatoria?.documentoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                DESCARGA LAS BASES
-              </Button>
+                <Button
+                  variant="outline"
+                  className="px-6 py-3 rounded-full! text-sm! border-purple-600! bg-purple-600 text-white! hover:bg-purple-300 "
+                >
+                  DESCARGA LAS BASES
+                </Button>
+              </a>
 
-              {/* Funcionalidad futura */}
-
-              {/* <Button className="px-6 py-3 rounded-full! text-sm! border-purple-600! bg-purple-600 text-white! hover:bg-purple-300">
-                INSCRIBIRME
-              </Button> */}
+              <a
+                href={convocatoria?.inscripcionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="px-6 py-3 rounded-full! text-sm! border-purple-600! bg-purple-600 text-white! hover:bg-purple-300">
+                  INSCRIBIRME
+                </Button>
+              </a>
             </div>
           </CardFooter>
         </CardFooter>

@@ -16,4 +16,5 @@ export interface Convocatoria {
   __v: number;
   porAnunciar: boolean;
   documentoUrl: string;
+  inscripcionUrl: string;
 }
