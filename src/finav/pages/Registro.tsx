@@ -66,6 +66,7 @@ export const Registro = () => {
   };
   // watch input value by passing the name of it
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const passwordValidation = watch("password");
 
   return (
