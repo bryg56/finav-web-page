@@ -1,8 +1,8 @@
 import axios from "axios";
 
 export const finavApi = axios.create({
-  //baseURL: "https://finav-backend.onrender.com/api",
-  baseURL: "http://localhost:4000/api",
+  baseURL: "https://finav-backend.onrender.com/api",
+  // baseURL: "http://localhost:4000/api",
 });
 
 finavApi.interceptors.request.use((config) => {
