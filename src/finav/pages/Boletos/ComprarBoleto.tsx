@@ -397,10 +397,7 @@ export const ComprarBoleto = () => {
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
                 <Button
                   className="px-6 py-3 rounded-full! text-sm! border-purple-600! bg-purple-600 text-white!"
-                  onClick={() =>
-                    cantidad < (boleto?.limitePorCompra ?? 4) &&
-                    setCantidad(cantidad + 1)
-                  }
+                  onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}
                   disabled={reservaActiva!}
                 >
                   -1
