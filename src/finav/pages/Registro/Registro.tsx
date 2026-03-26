@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useContext, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { crearUsuario } from "../actions/registrarUsuario.action";
+import { crearUsuario } from "../../actions/registrarUsuario.action";
 import { UserContext } from "@/context/userContext";
 import { toast } from "sonner";
 import { LoadingCircle } from "@/components/custom/LoadingCircle";

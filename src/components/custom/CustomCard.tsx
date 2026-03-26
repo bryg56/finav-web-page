@@ -14,6 +14,7 @@ interface props {
   description: string;
   isActive: boolean;
   porAnunciar: boolean;
+  textButton: string;
   buttonClicked: (id: string) => void;
 }
 
@@ -40,7 +41,12 @@ export const CustomCard = (props: props) => {
           props.porAnunciar ? "blur-sm opacity-40 select-none" : "grow"
         }`}
       >
-        <p className="mt-1 text-center">{props.description}</p>
+        <div
+          className="prose prose-purple max-w-none mt-1 text-center"
+          dangerouslySetInnerHTML={{
+            __html: props?.description === undefined ? "" : props.description,
+          }}
+        />
       </CardContent>
 
       <CardFooter className="flex-col gap-2">
@@ -50,7 +56,7 @@ export const CustomCard = (props: props) => {
           disabled={!props.isActive}
           onClick={() => props.buttonClicked(props.id)}
         >
-          {!props.isActive ? "PRÓXIMAMENTE" : "VER MÁS"}
+          {!props.isActive ? "PRÓXIMAMENTE" : props.textButton}
         </Button>
       </CardFooter>
 

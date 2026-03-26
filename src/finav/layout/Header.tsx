@@ -88,6 +88,25 @@ export const Header = () => {
 
               <NavigationMenuItem>
                 <NavLink
+                  to="/boletos"
+                  className={({ isActive }) =>
+                    cn(
+                      "bg-transparent p-0 text-sm font-semibold",
+                      "hover:bg-transparent focus:bg-transparent",
+
+                      // 👇 CLAVE
+                      isActive
+                        ? "text-purple-900! border-b-2 border-yellow-400"
+                        : "text-purple-900! hover:text-pink-500!",
+                    )
+                  }
+                >
+                  BOLETOS
+                </NavLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavLink
                   to="/convocatorias"
                   className={({ isActive }) =>
                     cn(
@@ -172,6 +191,14 @@ export const Header = () => {
             onClick={() => setIsOpen(false)}
           >
             ¿QUIENES SOMOS?
+          </NavLink>
+
+          <NavLink
+            to="/boletos"
+            className={navLinkStyles}
+            onClick={() => setIsOpen(false)}
+          >
+            BOLETOS
           </NavLink>
 
           <NavLink

@@ -1,7 +1,7 @@
 import { CustomCard } from "@/components/custom/CustomCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { getConvocatorias } from "../actions/getConvocatorias.action";
+import { getConvocatorias } from "../../actions/getConvocatorias.action";
 import type { Convocatoria } from "@/interfaces/convocatoria.interface";
 import { LoadingCircle } from "@/components/custom/LoadingCircle";
 
@@ -47,6 +47,7 @@ export const Convocatorias = () => {
                     isActive={convocatoria.activo}
                     porAnunciar={convocatoria.porAnunciar}
                     buttonClicked={handleClick}
+                    textButton="VER MAS"
                   />
                 </div>
               ))}

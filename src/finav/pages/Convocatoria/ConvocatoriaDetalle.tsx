@@ -10,7 +10,7 @@ import {
 import type { Convocatoria } from "@/interfaces/convocatoria.interface";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { getConvocatoria } from "../actions/getConvocatoria.action";
+import { getConvocatoria } from "../../actions/getConvocatoria.action";
 
 export const ConvocatoriaDetalle = () => {
   const [convocatoria, setConvocatoria] = useState<Convocatoria>();
@@ -39,7 +39,6 @@ export const ConvocatoriaDetalle = () => {
           className=""
         />
       </div>
-
       <Card className="relative overflow-visible max-w-4xl mx-auto rounded-2xl shadow-xl grow">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-purple-900">
