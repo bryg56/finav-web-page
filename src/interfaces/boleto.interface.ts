@@ -18,4 +18,7 @@ export interface Boleto {
   descripcionCorta: string;
   vendidos: number;
   limitePorCompra: number;
+  beneficios: {
+    talleresIncluidos: number;
+  };
 }

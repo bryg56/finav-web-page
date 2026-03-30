@@ -5,6 +5,7 @@ interface ReservaInput {
     boletoId: string;
     cantidad: number;
   }[];
+  talleres: { tallerId: string }[];
 }
 
 interface ReservaResponse {
@@ -20,7 +21,6 @@ export const crearReserva = async (
     return res.data.payload;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    // 👇 aquí está la magia
     const mensaje = error.response?.data?.msg || "Error creando reserva";
     throw new Error(mensaje);
   }

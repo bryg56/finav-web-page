@@ -18,6 +18,8 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { crearReserva } from "../../actions/crearReserva.action";
 import { useRef } from "react";
 import { cancelarReserva } from "../../actions/cancelarReserva.action";
+import { obtenerTalleres } from "../../actions/obtenerTalleres.action";
+import type { Taller } from "@/interfaces/taller.interface";
 
 type Inputs = {
   email: string;
@@ -48,7 +50,8 @@ export const ComprarBoleto = () => {
   const [reservaId, setReservaId] = useState<string | null>(null);
   const [reservaActiva, setReservaActiva] = useState(false);
   const [tiempoRestante, setTiempoRestante] = useState(0);
-
+  const [talleres, setTalleres] = useState<Taller[]>([]);
+  const [talleresSeleccionados, setTalleresSeleccionados] = useState<any[]>([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -68,6 +71,11 @@ export const ComprarBoleto = () => {
   const subtotal = precioUnitario * cantidad;
   const total = subtotal;
 
+  const talleresPermitidos =
+    (boleto?.beneficios?.talleresIncluidos || 0) * cantidad;
+
+  const puedeElegirTalleres = talleresPermitidos > 0;
+
   useEffect(() => {
     const fetchBoleto = async () => {
       const getData = await getBoleto(id);
@@ -82,6 +90,26 @@ export const ComprarBoleto = () => {
 
     fetchBoleto();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const fetchTalleres = async () => {
+      if (!boleto?.slug) return;
+
+      try {
+        const data = await obtenerTalleres(boleto.slug);
+        setTalleres(data);
+      } catch (error: any) {
+        toast(error.message);
+      }
+    };
+
+    if (puedeElegirTalleres) {
+      fetchTalleres();
+    } else {
+      setTalleres([]);
+      setTalleresSeleccionados([]);
+    }
+  }, [puedeElegirTalleres, boleto?.slug]);
 
   ///// Recuperar la reserva si se refresca la pagina.
   useEffect(() => {
@@ -122,6 +150,11 @@ export const ComprarBoleto = () => {
   const reservarBoletos = async () => {
     if (!boleto) return;
 
+    if (talleresSeleccionados.length > talleresPermitidos) {
+      toast("Seleccionaste más talleres de los permitidos");
+      return;
+    }
+
     try {
       const res = await crearReserva({
         boletos: [
@@ -130,6 +163,9 @@ export const ComprarBoleto = () => {
             cantidad,
           },
         ],
+        talleres: talleresSeleccionados.map((id) => ({
+          tallerId: id,
+        })),
       });
 
       setReservaId(res.reservaId);
@@ -139,7 +175,7 @@ export const ComprarBoleto = () => {
       localStorage.setItem("reservaId", res.reservaId);
       localStorage.setItem("reservaTiempo", res.expiraEn.toString());
     } catch (error: any) {
-      toast.warning(error.message, {
+      toast.error(error.message, {
         position: "top-center",
       });
     }
@@ -287,6 +323,7 @@ export const ComprarBoleto = () => {
             tokenId: token.id,
             email: data.email,
             reservaId,
+            nombre: data.name,
           });
           if (res.success) {
             localStorage.removeItem("reservaId");
@@ -295,7 +332,7 @@ export const ComprarBoleto = () => {
             navigate(`/confirmacion?ordenId=${res.ordenId}`);
           }
         } catch (error: any) {
-          toast(error.message, {
+          toast.error(error.message, {
             position: "top-center",
           });
         }
@@ -303,7 +340,7 @@ export const ComprarBoleto = () => {
         setLoading(false);
       },
       (error) => {
-        toast(error.message, {
+        toast.error(error.message, {
           position: "top-center",
         });
         setLoading(false);
@@ -382,6 +419,11 @@ export const ComprarBoleto = () => {
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-purple-900">
                 {boleto?.nombre}
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/finav-web.firebasestorage.app/o/assets%2FLINEALARGACONVOCATORIA.png?alt=media&token=b327eb82-c912-4265-b01c-582204fc6f2b"
+                  alt=""
+                  className="mx-auto"
+                />
               </CardTitle>
             </CardHeader>
 
@@ -391,6 +433,80 @@ export const ComprarBoleto = () => {
                   __html: boleto?.descripcion ?? "",
                 }}
               />
+
+              {puedeElegirTalleres && (
+                <div className="p-4 border rounded-xl bg-purple-50">
+                  <h3 className=" text-purple-800! mb-2">
+                    SELECCIONA TUS TALLERES
+                  </h3>
+
+                  <p className="text-sm text-gray-600 mb-3">
+                    Puedes elegir hasta {talleresPermitidos} talleres
+                  </p>
+
+                  <div className="space-y-2">
+                    {talleres.map((taller) => {
+                      const seleccionado = talleresSeleccionados.some(
+                        (t) => t === taller._id,
+                      );
+
+                      const lleno = taller.disponibles <= 0;
+
+                      return (
+                        <div
+                          key={taller._id}
+                          className={`p-3 rounded-lg border flex justify-between items-center cursor-pointer transition
+                                          ${
+                                            lleno
+                                              ? "bg-gray-200 cursor-not-allowed"
+                                              : seleccionado
+                                                ? "bg-purple-200 border-purple-500"
+                                                : "bg-white hover:bg-purple-100"
+                                          }`}
+                          onClick={() => {
+                            if (lleno) return;
+
+                            if (seleccionado) {
+                              setTalleresSeleccionados((prev) =>
+                                prev.filter((id) => id !== taller._id),
+                              );
+                            } else {
+                              if (
+                                talleresSeleccionados.length >=
+                                talleresPermitidos
+                              ) {
+                                toast.warning(
+                                  "Has alcanzado el límite de talleres",
+                                  {
+                                    position: "top-center",
+                                  },
+                                );
+                                return;
+                              }
+
+                              setTalleresSeleccionados((prev) => [
+                                ...prev,
+                                taller._id,
+                              ]);
+                            }
+                          }}
+                        >
+                          <div>
+                            <p className="font-semibold text-purple-800!">
+                              {taller.nombre}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Cupo disponible: {taller.disponibles}
+                            </p>
+                          </div>
+
+                          {seleccionado && <span>✅</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="flex justify-center">
@@ -443,14 +559,14 @@ export const ComprarBoleto = () => {
             {!reservaActiva && (
               <Button
                 onClick={reservarBoletos}
-                className="w-1/2 bg-purple-600 hover:bg-purple-700 text-white rounded-full! py-3 text-lg"
+                className=" bg-purple-600 hover:bg-purple-700 text-white rounded-full! py-3 text-lg"
               >
                 Reservar boletos
               </Button>
             )}
 
             {reservaActiva && (
-              <div className="space-y- text-center mt-4">
+              <div className="space-y- text-center mt-1">
                 <p className="text-red-500 text-sm font-medium">
                   ⏳ Tienes {Math.floor(tiempoRestante / 60)}:
                   {(tiempoRestante % 60).toString().padStart(2, "0")} para pagar
@@ -467,18 +583,18 @@ export const ComprarBoleto = () => {
             )}
 
             {reservaActiva && (
-              <form onSubmit={handleSubmit(pagar)} className="space-y-6 mt-4">
+              <form onSubmit={handleSubmit(pagar)} className="space-y-4 mt-1">
                 {/* 📧 EMAILS */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <input
                     type="email"
                     placeholder="Correo electrónico"
                     className={`w-full border rounded-xl px-4 py-3 transition-all outline-none
-      ${
-        errors.email
-          ? "border-red-500 focus:ring-2 focus:ring-red-400"
-          : "border-gray-300 focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
-      }`}
+                              ${
+                                errors.email
+                                  ? "border-red-500 focus:ring-2 focus:ring-red-400"
+                                  : "border-gray-300 focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
+                              }`}
                     {...register("email", {
                       required: "El correo es obligatorio",
                       pattern: {
@@ -497,7 +613,7 @@ export const ComprarBoleto = () => {
                   <input
                     type="email"
                     placeholder="Confirmar correo electrónico"
-                    className={`w-full border rounded-xl px-4 py-3 transition-all outline-none
+                    className={`w-full border rounded-xl mt-3 px-4 py-3 transition-all outline-none
                         ${
                           errors.confirmEmail
                             ? "border-red-500 focus:ring-2 focus:ring-red-400"
@@ -644,7 +760,13 @@ export const ComprarBoleto = () => {
                   y la{" "}
                   <span
                     className="text-purple-600 font-semibold cursor-pointer underline"
-                    onClick={() => navigate("/privacidad")}
+                    onClick={() =>
+                      window.open(
+                        "/privacidad",
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
                   >
                     Política de Reembolsos
                   </span>

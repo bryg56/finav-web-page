@@ -44,6 +44,9 @@ export const Footer = () => {
             <Link className="font-bold mb-2 block" to={"/legal"}>
               TERMINOS Y CONDICIONES
             </Link>
+            <Link className="font-bold mb-2 block" to={"/privacidad"}>
+              AVISO DE PRIVACIDAD
+            </Link>
             <p className="font-bold mb-2">
               CONTÁCTANOS EN: animagsion@gmail.com
             </p>

@@ -113,6 +113,11 @@ export default function PrivacyAndRefundPolicy() {
               En caso de ser aprobado, el reembolso será procesado utilizando el
               mismo método de pago, en un plazo estimado de 5 a 15 días hábiles.
             </p>
+
+            <p className="mt-3">
+              Este podrá ser solicitado como máximo el 30 de abril; posterior a
+              esta fecha, no se podrá solicitar reembolso.
+            </p>
           </section>
 
           {/* RESPONSABILIDAD */}
