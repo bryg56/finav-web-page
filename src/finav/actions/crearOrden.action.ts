@@ -1,7 +1,6 @@
 import { finavApi } from "@/api/finav.api";
 
 interface CrearOrdenInput {
-  tokenId: string;
   email: string;
   reservaId: string;
   nombre: string;

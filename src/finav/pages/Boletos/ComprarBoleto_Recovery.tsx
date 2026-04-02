@@ -16,7 +16,7 @@ import { useConekta } from "@/hooks/useConekta";
 import { toast } from "sonner";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { crearReserva } from "../../actions/crearReserva.action";
-// import { useRef } from "react";
+import { useRef } from "react";
 import { cancelarReserva } from "../../actions/cancelarReserva.action";
 import { obtenerTalleres } from "../../actions/obtenerTalleres.action";
 import type { Taller } from "@/interfaces/taller.interface";
@@ -35,18 +35,18 @@ type Inputs = {
 export const ComprarBoleto = () => {
   useConekta();
 
-  // const expMonthRef = useRef<HTMLInputElement>(null);
-  // const expYearRef = useRef<HTMLInputElement>(null);
-  // const cvcRef = useRef<HTMLInputElement>(null);
+  const expMonthRef = useRef<HTMLInputElement>(null);
+  const expYearRef = useRef<HTMLInputElement>(null);
+  const cvcRef = useRef<HTMLInputElement>(null);
 
   const [boleto, setBoleto] = useState<Boleto>();
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // const [cardNumber, setCardNumber] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [cardType, setCardType] = useState("");
-  // const [cardError, setCardError] = useState("");
+  const [cardType, setCardType] = useState("");
+  const [cardError, setCardError] = useState("");
   const [reservaId, setReservaId] = useState<string | null>(null);
   const [reservaActiva, setReservaActiva] = useState(false);
   const [tiempoRestante, setTiempoRestante] = useState(0);
@@ -59,7 +59,7 @@ export const ComprarBoleto = () => {
     register,
     handleSubmit,
     watch,
-    // setValue,
+    setValue,
     formState: { errors, isValid },
   } = useForm<Inputs>({
     mode: "onChange", // 👈 clave para validar en tiempo real
@@ -111,6 +111,7 @@ export const ComprarBoleto = () => {
     }
   }, [puedeElegirTalleres, boleto?.slug]);
 
+  ///// Recuperar la reserva si se refresca la pagina.
   useEffect(() => {
     const storedReserva = localStorage.getItem("reservaId");
     const storedTiempo = localStorage.getItem("reservaTiempo");
@@ -182,6 +183,101 @@ export const ComprarBoleto = () => {
     }
   };
 
+  const handleExpMonthChange = (e: any) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 2);
+
+    if (parseInt(value) > 12) {
+      value = "12"; // o "" si prefieres bloquear
+    }
+
+    setValue("exp_month", value);
+
+    if (value.length === 2) {
+      expYearRef.current?.focus();
+    }
+  };
+
+  const handleExpYearChange = (e: any) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 2);
+
+    setValue("exp_year", value);
+
+    if (value.length === 2) {
+      cvcRef.current?.focus();
+    }
+  };
+
+  const handleCvcChange = (e: any) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+
+    setValue("cvc", value);
+  };
+
+  const detectCardType = (number: string) => {
+    const cleaned = number.replace(/\s/g, "");
+
+    if (/^4/.test(cleaned)) return "visa";
+    if (/^5[1-5]/.test(cleaned)) return "mastercard";
+    if (/^3[47]/.test(cleaned)) return "amex";
+
+    return "";
+  };
+
+  function validarTarjetaLuhn(numero: string) {
+    const clean = numero.replace(/\s/g, "");
+    let sum = 0;
+    let shouldDouble = false;
+
+    for (let i = clean.length - 1; i >= 0; i--) {
+      let digit = parseInt(clean.charAt(i));
+
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+
+    return sum % 10 === 0;
+  }
+
+  function validarFechaTarjeta(mes: string, año: string) {
+    const ahora = new Date();
+
+    const mesActual = ahora.getMonth() + 1;
+    const añoActual = ahora.getFullYear() % 100;
+
+    const mesNum = parseInt(mes);
+    const añoNum = parseInt(año);
+
+    if (añoNum < añoActual) return false;
+    if (añoNum === añoActual && mesNum < mesActual) return false;
+
+    return true;
+  }
+
+  const handleCardChange = (e: any) => {
+    let value = e.target.value;
+    value = value.replace(/\D/g, "");
+    value = value.slice(0, 16);
+    const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
+    setCardNumber(formatted);
+
+    const type = detectCardType(formatted);
+    setCardType(type);
+
+    // validación
+    if (value.length < 16) {
+      setCardError("La tarjeta debe tener 16 dígitos");
+    } else if (!validarTarjetaLuhn(value)) {
+      setCardError("La tarjeta no es válida");
+    } else {
+      setCardError("");
+    }
+  };
+
   const pagar: SubmitHandler<Inputs> = async (data) => {
     if (!boleto || !reservaId) {
       toast("Primero debes reservar boletos", {
@@ -197,49 +293,87 @@ export const ComprarBoleto = () => {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      const res = await crearOrden({
-        email: data.email,
-        reservaId,
-        nombre: data.name,
+    if (cardError) {
+      toast("Tarjeta inválida", {
+        position: "top-center",
       });
-
-      if (res.payload?.paymentUrl) {
-        window.location.href = res.payload.paymentUrl;
-      }
-    } catch (error: any) {
-      toast.error(error.message);
+      return;
     }
 
-    setLoading(false);
+    if (!validarFechaTarjeta(data.exp_month, data.exp_year)) {
+      toast("La tarjeta está vencida", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    window.Conekta.Token.create(
+      {
+        card: {
+          number: data.number.replace(/\s/g, ""),
+          name: data.name,
+          exp_month: data.exp_month,
+          exp_year: data.exp_year,
+          cvc: data.cvc,
+        },
+      },
+      async (token) => {
+        try {
+          const res = await crearOrden({
+            tokenId: token.id,
+            email: data.email,
+            reservaId,
+            nombre: data.name,
+          });
+          if (res.success) {
+            localStorage.removeItem("reservaId");
+            localStorage.removeItem("reservaTiempo");
+
+            navigate(`/confirmacion?ordenId=${res.ordenId}`);
+          }
+        } catch (error: any) {
+          toast.error(error.message, {
+            position: "top-center",
+          });
+        }
+
+        setLoading(false);
+      },
+      (error) => {
+        toast.error(error.message, {
+          position: "top-center",
+        });
+        setLoading(false);
+      },
+    );
   };
 
-  // const { ref: expMonthRegisterRef, ...expMonthRest } = register("exp_month", {
-  //   required: "Mes requerido",
-  //   validate: (value) => {
-  //     const num = parseInt(value);
-  //     if (isNaN(num) || num < 1 || num > 12) return "Mes inválido";
-  //     return true;
-  //   },
-  // });
+  const { ref: expMonthRegisterRef, ...expMonthRest } = register("exp_month", {
+    required: "Mes requerido",
+    validate: (value) => {
+      const num = parseInt(value);
+      if (isNaN(num) || num < 1 || num > 12) return "Mes inválido";
+      return true;
+    },
+  });
 
-  // const { ref: expYearRegisterRef, ...expYearRest } = register("exp_year", {
-  //   required: "Año requerido",
-  //   pattern: {
-  //     value: /^\d{2}$/,
-  //     message: "Año inválido",
-  //   },
-  // });
+  const { ref: expYearRegisterRef, ...expYearRest } = register("exp_year", {
+    required: "Año requerido",
+    pattern: {
+      value: /^\d{2}$/,
+      message: "Año inválido",
+    },
+  });
 
-  // const { ref: cvcRegisterRef, ...cvcRest } = register("cvc", {
-  //   required: "CVC requerido",
-  //   pattern: {
-  //     value: /^\d{3,4}$/,
-  //     message: "CVC inválido",
-  //   },
-  // });
+  const { ref: cvcRegisterRef, ...cvcRest } = register("cvc", {
+    required: "CVC requerido",
+    pattern: {
+      value: /^\d{3,4}$/,
+      message: "CVC inválido",
+    },
+  });
 
   const handleCancelarReserva = async () => {
     if (!reservaId) return;
@@ -270,7 +404,7 @@ export const ComprarBoleto = () => {
     }
   };
 
-  const formInvalido = !isValid || !reservaActiva || !reservaId;
+  const formInvalido = !isValid || !!cardError || !reservaActiva || !reservaId;
 
   return (
     <div>
@@ -454,6 +588,7 @@ export const ComprarBoleto = () => {
 
             {reservaActiva && (
               <form onSubmit={handleSubmit(pagar)} className="space-y-4 mt-1">
+                {/* 👤 NOMBRE */}
                 <div className="pt-1">
                   <input
                     placeholder="Nombre del titular"
@@ -479,6 +614,7 @@ export const ComprarBoleto = () => {
                   )}
                 </div>
 
+                {/* 📧 EMAILS */}
                 <div className="space-y-4">
                   <input
                     type="email"
@@ -536,6 +672,84 @@ export const ComprarBoleto = () => {
                   {...register("cupon")}
                 /> */}
 
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      value={cardNumber}
+                      placeholder="Número de tarjeta"
+                      maxLength={19}
+                      inputMode="numeric"
+                      className={`w-full border rounded-xl px-4 py-3 pr-12 outline-none transition-all
+                          ${
+                            cardError
+                              ? "border-red-500 focus:ring-2 focus:ring-red-400"
+                              : "border-gray-300 focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
+                          }`}
+                      {...register("number", {
+                        required: "Número de tarjeta obligatorio",
+                      })}
+                      onChange={(e) => {
+                        handleCardChange(e);
+                        setValue("number", e.target.value);
+                      }}
+                    />
+
+                    {cardType && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+                        {cardType.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  {cardError && (
+                    <p className="text-red-500 text-xs px-1">{cardError}</p>
+                  )}
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <input
+                      ref={(e) => {
+                        expMonthRegisterRef(e);
+                        expMonthRef.current = e;
+                      }}
+                      placeholder="MM"
+                      inputMode="numeric"
+                      maxLength={2}
+                      className="border border-gray-300 rounded-xl px-4 py-3 outline-none 
+                          focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
+                      {...expMonthRest}
+                      onChange={handleExpMonthChange}
+                    />
+
+                    <input
+                      ref={(e) => {
+                        expYearRegisterRef(e);
+                        expYearRef.current = e;
+                      }}
+                      placeholder="AA"
+                      inputMode="numeric"
+                      maxLength={2}
+                      className="border border-gray-300 rounded-xl px-4 py-3 outline-none 
+                          focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
+                      {...expYearRest}
+                      onChange={handleExpYearChange}
+                    />
+
+                    <input
+                      ref={(e) => {
+                        cvcRegisterRef(e);
+                        cvcRef.current = e;
+                      }}
+                      placeholder="CVC"
+                      inputMode="numeric"
+                      maxLength={4}
+                      className="border border-gray-300 rounded-xl px-4 py-3 outline-none 
+                          focus:ring-2 focus:ring-purple-400 focus:border-purple-500"
+                      {...cvcRest}
+                      onChange={handleCvcChange}
+                    />
+                  </div>
+                </div>
+
                 <p className="text-xs text-gray-500 text-center px-2 leading-relaxed">
                   Al completar la compra, aceptas nuestro{" "}
                   <span
@@ -560,6 +774,8 @@ export const ComprarBoleto = () => {
                   , incluyendo que en caso de reembolso se aplicará una comisión
                   del 3% por procesamiento de pago.
                 </p>
+
+                {/* 🚀 BOTÓN */}
                 <Button
                   className="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white rounded-full! py-3 text-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || formInvalido}
