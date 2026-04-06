@@ -206,8 +206,15 @@ export const ComprarBoleto = () => {
         nombre: data.name,
       });
 
-      if (res.payload?.paymentUrl) {
-        window.location.href = res.payload.paymentUrl;
+      if (res.paymentUrl) {
+        // limpiar estado
+        setReservaId(null);
+        setReservaActiva(false);
+        setTiempoRestante(0);
+
+        localStorage.removeItem("reservaId");
+        localStorage.removeItem("reservaTiempo");
+        window.location.href = res.paymentUrl;
       }
     } catch (error: any) {
       toast.error(error.message);

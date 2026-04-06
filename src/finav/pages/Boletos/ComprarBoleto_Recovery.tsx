@@ -319,10 +319,11 @@ export const ComprarBoleto = () => {
           cvc: data.cvc,
         },
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       async (token) => {
         try {
           const res = await crearOrden({
-            tokenId: token.id,
+            // tokenId: token.id,
             email: data.email,
             reservaId,
             nombre: data.name,
