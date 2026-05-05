@@ -47,6 +47,7 @@ export const Convocatorias = () => {
                     isActive={convocatoria.activo}
                     porAnunciar={convocatoria.porAnunciar}
                     buttonClicked={handleClick}
+                    textDisabled="CONVOCATORIA CERRADA"
                     textButton="VER MAS"
                   />
                 </div>

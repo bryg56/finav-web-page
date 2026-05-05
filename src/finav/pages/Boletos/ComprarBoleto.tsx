@@ -463,7 +463,7 @@ export const ComprarBoleto = () => {
               <form onSubmit={handleSubmit(pagar)} className="space-y-4 mt-1">
                 <div className="pt-1">
                   <input
-                    placeholder="Nombre del titular"
+                    placeholder="Nombre"
                     className={`w-full border rounded-xl px-4 py-3 outline-none transition-all
                         ${
                           errors.name

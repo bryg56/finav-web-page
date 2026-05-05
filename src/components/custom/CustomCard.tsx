@@ -15,6 +15,7 @@ interface props {
   isActive: boolean;
   porAnunciar: boolean;
   textButton: string;
+  textDisabled: string;
   buttonClicked: (id: string) => void;
 }
 
@@ -56,7 +57,7 @@ export const CustomCard = (props: props) => {
           disabled={!props.isActive}
           onClick={() => props.buttonClicked(props.id)}
         >
-          {!props.isActive ? "PRÓXIMAMENTE" : props.textButton}
+          {!props.isActive ? props.textDisabled : props.textButton}
         </Button>
       </CardFooter>
 

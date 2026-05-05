@@ -12,6 +12,7 @@ export const Boletos = () => {
 
   useEffect(() => {
     const fetchBoletos = async () => {
+      setShowModal(false);
       setLoading(true);
       const getData = await getBoletos();
       setBoleto(getData);
@@ -71,6 +72,7 @@ export const Boletos = () => {
                 isActive={boleto.activo}
                 porAnunciar={false}
                 buttonClicked={handleClick}
+                textDisabled="COMPRAR"
                 textButton="COMPRAR"
               />
             </div>
